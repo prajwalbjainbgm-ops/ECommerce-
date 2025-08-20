@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Checkout</title>
+  <style>
+    body {font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4;}
+    header {background: #333; color: #fff; padding: 15px; text-align: center;}
+    nav {background: #444; padding: 10px; text-align: center;}
+    nav a {color: #fff; text-decoration: none; margin: 0 10px;}
+    .container {width: 80%; margin: 20px auto; background: #fff; padding: 20px; border-radius: 10px;}
+    h2 {text-align: center; color: #333;}
+    label {display: block; margin: 10px 0 5px;}
+    input, select, textarea {width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 5px;}
+    button {background: #28a745; color: #fff; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer;}
+    button:hover {background: #218838;}
+    .hidden {display: none;}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <script>
+    (function(){ emailjs.init("YOUR_EMAILJS_PUBLIC_KEY"); })();
+  </script>
+</head>
+<body>
+  
+  <nav>
+    <a href="checkout.html">Checkout</a>
+    <a href="order-summary.html">Order Summary</a>
+    <a href="contact.html">Contact</a>
+    <a href="index.html">Product</a>
+  </nav>
+
+  <div class="container">
+    <h2>Enter Your Details</h2>
+    <form id="checkoutForm">
+      <label>Name:</label>
+      <input type="text" id="customerName" required>
+      
+      <label>Address:</label>
+      <textarea id="address" required></textarea>
+      
+      <label>City:</label>
+      <input type="text" id="city" required>
+      
+      <label>Postal Code:</label>
+      <input type="text" id="postalCode" required>
+
+      <label>Product:</label>
+      <input type="text" id="product" value="Sample Product" required>
+      
+      <label>Quantity:</label>
+      <input type="number" id="quantity" value="1" required>
+      
+      <label>Price:</label>
+      <input type="text" id="price" value="₹999" required>
+
+      <label>Payment Method:</label>
+      <select id="paymentMethod" onchange="showPaymentFields()">
+        <option value="">Select</option>
+        <option value="Credit Card">Credit Card</option>
+        <option value="Debit Card">Debit Card</option>
+        <option value="UPI">UPI</option>
+        <option value="Cash on Delivery">Cash on Delivery</option>
+      </select>
+
+      <div id="cardDetails" class="hidden">
+        <label>Card Number:</label>
+        <input type="text" id="cardNumber">
+        <label>Expiry Date:</label>
+        <input type="text" id="expiry">
+        <label>CVV:</label>
+        <input type="text" id="cvv">
+      </div>
+
+      <div id="upiDetails" class="hidden">
+        <label>UPI ID / Bank:</label>
+        <input type="text" id="upiId">
+      </div>
+
+      <button type="submit">Place Order</button>
+    </form>
+  </div>
+
+  <script>
+    function showPaymentFields() {
+      const method = document.getElementById("paymentMethod").value;
+      document.getElementById("cardDetails").classList.add("hidden");
+      document.getElementById("upiDetails").classList.add("hidden");
+
+      if (method === "Credit Card" || method === "Debit Card") {
+        document.getElementById("cardDetails").classList.remove("hidden");
+      } else if (method === "UPI") {
+        document.getElementById("upiDetails").classList.remove("hidden");
+      }
+    }
+
+    document.getElementById("checkoutForm").addEventListener("submit", function(e){
+      e.preventDefault();
+
+      const order = {
+        customerName: document.getElementById("customerName").value,
+        address: document.getElementById("address").value,
+        city: document.getElementById("city").value,
+        postalCode: document.getElementById("postalCode").value,
+        product: document.getElementById("product").value,
+        quantity: document.getElementById("quantity").value,
+        price: document.getElementById("price").value,
+        paymentMethod: document.getElementById("paymentMethod").value
+      };
+
+      // Save to localStorage
+      let orders = JSON.parse(localStorage.getItem("orders")) || [];
+      orders.push(order);
+      localStorage.setItem("orders", JSON.stringify(orders));
+
+      // Send email to retailer via EmailJS
+      emailjs.send("YOUR_SERVICE_ID","YOUR_TEMPLATE_ID", order)
+        .then(() => alert("Order placed successfully!"))
+        .catch(err => alert("Error sending email: " + JSON.stringify(err)));
+
+      // Redirect to order summary
+      window.location.href = "order-summary.html";
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Order Summary</title>
+  <style>
+    body {font-family: Arial, sans-serif; margin: 0; padding: 0; background: #f4f4f4;}
+    header {background: #333; color: #fff; padding: 15px; text-align: center;}
+    nav {background: #444; padding: 10px; text-align: center;}
+    nav a {color: #fff; text-decoration: none; margin: 0 10px;}
+    .container {width: 80%; margin: 20px auto; background: #fff; padding: 20px; border-radius: 10px;}
+    h2 {text-align: center; color: #333;}
+    .order {border: 1px solid #ccc; border-radius: 8px; padding: 15px; margin-bottom: 15px; background: #fafafa;}
+    .order p {margin: 5px 0;}
+    button {background: #dc3545; color: #fff; padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;}
+    button:hover {background: #c82333;}
+    .hidden {display: none;}
+    .reason-box {margin-top: 10px; padding: 10px; border: 1px solid #ccc; border-radius: 5px; background: #f9f9f9;}
+    textarea {width: 100%; padding: 8px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px;}
+    .suggestions {margin: 8px 0;}
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="checkout.html">Checkout</a>
+    <a href="order-summary.html">Order Summary</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+
+  <div class="container">
+    <h2>Your Orders</h2>
+    <div id="yourOrders"></div>
+
+    <h2>Cancelled Orders</h2>
+    <div id="cancelledOrders"></div>
+  </div>
+
+  <script>
+    let orders = JSON.parse(localStorage.getItem("orders")) || [];
+    let cancelledOrders = JSON.parse(localStorage.getItem("cancelledOrders")) || [];
+
+    const yourOrdersDiv = document.getElementById("yourOrders");
+    const cancelledOrdersDiv = document.getElementById("cancelledOrders");
+
+    function displayOrders() {
+      yourOrdersDiv.innerHTML = "";
+      orders.forEach((order, index) => {
+        const orderDiv = document.createElement("div");
+        orderDiv.classList.add("order");
+
+        orderDiv.innerHTML = `
+          <p><strong>Product:</strong> ${order.product}</p>
+          <p><strong>Quantity:</strong> ${order.quantity}</p>
+          <p><strong>Price:</strong> ${order.price}</p>
+          <p><strong>Customer:</strong> ${order.customerName}, ${order.address}, ${order.city} - ${order.postalCode}</p>
+          <p><strong>Payment Method:</strong> ${order.paymentMethod}</p>
+          <button onclick="showCancelReason(${index})">Cancel Order</button>
+          <div id="reason-${index}" class="reason-box hidden">
+            <p><strong>Select a reason for cancellation:</strong></p>
+            <div class="suggestions">
+              <input type="radio" name="reason${index}" value="Found cheaper elsewhere"> Found cheaper elsewhere<br>
+              <input type="radio" name="reason${index}" value="Ordered by mistake"> Ordered by mistake<br>
+              <input type="radio" name="reason${index}" value="Delivery time too long"> Delivery time too long<br>
+              <input type="radio" name="reason${index}" value="Other"> Other<br>
+            </div>
+            <textarea id="customReason-${index}" placeholder="Enter your reason here..."></textarea>
+            <button onclick="cancelOrder(${index})">Confirm Cancel</button>
+          </div>
+        `;
+        yourOrdersDiv.appendChild(orderDiv);
+      });
+    }
+
+    function displayCancelledOrders() {
+      cancelledOrdersDiv.innerHTML = "";
+      cancelledOrders.forEach(order => {
+        const orderDiv = document.createElement("div");
+        orderDiv.classList.add("order");
+        orderDiv.innerHTML = `
+          <p><strong>Product:</strong> ${order.product}</p>
+          <p><strong>Quantity:</strong> ${order.quantity}</p>
+          <p><strong>Price:</strong> ${order.price}</p>
+          <p><strong>Cancelled Reason:</strong> ${order.cancelReason}</p>
+        `;
+        cancelledOrdersDiv.appendChild(orderDiv);
+      });
+    }
+
+    function showCancelReason(index) {
+      document.getElementById(`reason-${index}`).classList.toggle("hidden");
+    }
+
+    function cancelOrder(index) {
+      const radios = document.getElementsByName(`reason${index}`);
+      let reason = "";
+      radios.forEach(r => { if (r.checked) reason = r.value; });
+      const customReason = document.getElementById(`customReason-${index}`).value;
+      if (customReason.trim() !== "") reason = customReason;
+
+      if (!reason) { alert("⚠ Please select or enter a reason."); return; }
+
+      let cancelledOrder = { ...orders[index], cancelReason: reason };
+      cancelledOrders.push(cancelledOrder);
+      orders.splice(index, 1);
+
+      localStorage.setItem("orders", JSON.stringify(orders));
+      localStorage.setItem("cancelledOrders", JSON.stringify(cancelledOrders));
+
+      displayOrders();
+      displayCancelledOrders();
+    }
+
+    displayOrders();
+    displayCancelledOrders();
+  </script>
+</body>
+</html>

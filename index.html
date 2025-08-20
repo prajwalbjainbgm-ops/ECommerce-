@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>E-commerce Store</title>
+    <style>
+        body { font-family: Arial; margin: 0; background: #f4f4f4; }
+        nav { background: #333; padding: 10px; text-align: center; }
+        nav a { color: white; text-decoration: none; margin: 0 15px; font-weight: bold; }
+        .container { display: flex; flex-wrap: wrap; justify-content: center; padding: 20px; }
+        .product { background: white; margin: 15px; padding: 15px; width: 200px; text-align: center; border-radius: 5px; box-shadow: 0 0 5px #aaa; }
+        img { width: 100%; height: 150px; object-fit: cover; }
+        button { margin: 5px; padding: 8px; border: none; background: green; color: white; border-radius: 4px; cursor: pointer; }
+        button:hover { background: darkgreen; }
+    </style>
+    <script type="text/javascript"
+        src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js">
+</script>
+<script type="text/javascript">
+   (function(){
+      emailjs.init({
+        publicKey: "2VOkG8RagS5wBB7uq",
+      });
+   })();
+</script>
+</head>
+<body>
+    <nav>
+        <a href="index.html">Products</a>
+        <a href="cart.html">Cart</a>
+        <a href="order-summary.html">Order Summary</a>
+    </nav>
+
+    <div class="container" id="product-list"></div>
+
+    <script>
+        let products = [
+            { id: 1, name: "Smartphone", price: 12000, discount: "10%", image: "https://via.placeholder.com/200x150", review: "★★★★☆" },
+            { id: 2, name: "Headphones", price: 1500, discount: "5%", image: "https://via.placeholder.com/200x150", review: "★★★☆☆" },
+            { id: 3, name: "Laptop", price: 55000, discount: "15%", image: "https://via.placeholder.com/200x150", review: "★★★★★" }
+        ];
+
+        let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+        function addToCart(product) {
+            if (!cart.find(item => item.id === product.id)) {
+                cart.push(product);
+                localStorage.setItem("cart", JSON.stringify(cart));
+                alert("Product added to cart");
+            } else {
+                alert("Product already in cart");
+            }
+        }
+
+        function buyNow(product) {
+            localStorage.setItem("checkoutProduct", JSON.stringify(product));
+            window.location.href = "checkout.html";
+        }
+
+        document.getElementById("product-list").innerHTML = products.map(p => `
+            <div class="product">
+                <img src="${p.image}">
+                <h3>${p.name}</h3>
+                <p>Price: ₹${p.price}</p>
+                <p>Discount: ${p.discount}</p>
+                <p>Review: ${p.review}</p>
+                <button onclick='addToCart(${JSON.stringify(p)})'>Add to Cart</button>
+                <button onclick='buyNow(${JSON.stringify(p)})'>Buy Now</button>
+            </div>
+        `).join("");
+    </script>
+</body>
+</html>
